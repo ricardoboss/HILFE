@@ -35,6 +35,7 @@
         </PackageReference>
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
         <PackageReference Include="Spectre.Console.Cli" />
+        <PackageReference Include="StepLang.Leap.Client" />
         <PackageReference Include="System.Linq.Async"/>
         <PackageReference Include="ToStringWithoutOverrideAnalyzer">
             <PrivateAssets>all</PrivateAssets>

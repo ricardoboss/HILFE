@@ -1,4 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
+using Leap.Client;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Spectre.Console.Cli;
 using StepLang.CLI.Commands;
 
@@ -14,7 +17,14 @@ internal static class Program
     {
         const string slogan = "STEP - Simple Transition to Elevated Programming";
 
-        var app = new CommandApp<DefaultCommand>()
+        var registrar = new ServiceCollectionRegistrar();
+
+        registrar.Services.AddSingleton<IConfiguration, ConfigurationManager>();
+
+        registrar.Services.AddLeapCredentialManager();
+        registrar.Services.AddLeapClient();
+
+        var app = new CommandApp<DefaultCommand>(registrar)
                 .WithDescription(slogan + Environment.NewLine + "Version: " + GitVersionInformation.FullSemVer)
             ;
 
@@ -59,6 +69,10 @@ internal static class Program
             config.AddCommand<ParseCommand>("parse")
                 .WithDescription("Parse a .step-file and print the AST to the console.")
                 .WithExample("parse my-script.step")
+                ;
+
+            config.AddCommand<AddCommand>("add")
+                .WithDescription("Add a library from LEAP.")
                 ;
         });
 
