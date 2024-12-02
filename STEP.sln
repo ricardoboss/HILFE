@@ -62,6 +62,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StepLang.Homepage", "StepLa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StepLang.Tooling.Highlighting.Tests", "StepLang.Tooling.Highlighting.Tests\StepLang.Tooling.Highlighting.Tests.csproj", "{6754E592-D96F-455D-86E5-142B9E7A7D21}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StepLang.LSP", "StepLang.LSP\StepLang.LSP.csproj", "{0463F7A7-1CA9-4DE9-BB5C-54707622E018}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -109,6 +111,12 @@ Global
 		{6754E592-D96F-455D-86E5-142B9E7A7D21}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6754E592-D96F-455D-86E5-142B9E7A7D21}.Test|Any CPU.ActiveCfg = Test|Any CPU
 		{6754E592-D96F-455D-86E5-142B9E7A7D21}.Test|Any CPU.Build.0 = Test|Any CPU
+		{0463F7A7-1CA9-4DE9-BB5C-54707622E018}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0463F7A7-1CA9-4DE9-BB5C-54707622E018}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0463F7A7-1CA9-4DE9-BB5C-54707622E018}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0463F7A7-1CA9-4DE9-BB5C-54707622E018}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0463F7A7-1CA9-4DE9-BB5C-54707622E018}.Test|Any CPU.ActiveCfg = Test|Any CPU
+		{0463F7A7-1CA9-4DE9-BB5C-54707622E018}.Test|Any CPU.Build.0 = Test|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

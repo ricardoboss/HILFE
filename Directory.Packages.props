@@ -15,6 +15,7 @@
     <PackageVersion Include="SmartAnalyzers.CSharpExtensions.Annotations" Version="4.2.11" />
     <PackageVersion Include="Spectre.Console.Cli" Version="0.49.1" />
     <PackageVersion Include="Spectre.Console.Testing" Version="0.49.1" />
+    <PackageVersion Include="StreamJsonRpc" Version="2.20.20" />
     <PackageVersion Include="System.Linq.Async" Version="6.0.1" />
     <PackageVersion Include="IDisposableAnalyzers" Version="4.0.8">
       <PrivateAssets>all</PrivateAssets>
