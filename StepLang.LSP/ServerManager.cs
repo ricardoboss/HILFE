@@ -3,11 +3,16 @@ using System.Net;
 using System.Net.Sockets;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Nerdbank.Streams;
+using OmniSharp.Extensions.JsonRpc;
+using OmniSharp.Extensions.JsonRpc.Server;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Server;
+using StepLang.LSP.Diagnostics;
+using StepLang.LSP.Diagnostics.Analyzers;
 using StepLang.LSP.Handlers;
 using StepLang.LSP.Handlers.TextDocument;
 
@@ -117,30 +122,48 @@ public class ServerManager(ServerOptions options)
 	[MustDisposeResource]
 	private LanguageServer CreateServer(Stream input, Stream output)
 	{
-		var server = LanguageServer.Create(o =>
+		var info = new ServerInfo
 		{
-			o.ServerInfo = new ServerInfo
-			{
-				Name = "STEP", Version = GitVersionInformation.FullSemVer,
-			};
+			Name = "STEP", Version = GitVersionInformation.FullSemVer,
+		};
 
-			o.Input = input.UsePipeReader();
-			o.Output = output.UsePipeWriter();
-
-			_ = o.WithServices(s =>
-			{
-				if (options.LoggerFactory is { } loggerFactory)
-					_ = s.AddLogging(b =>
-						b.Services.AddSingleton(loggerFactory)
-					);
-			});
-
-			_ = o.WithHandler<SemanticTokensHandler>();
-			_ = o.WithHandler<DefinitionHandler>();
-			_ = o.WithHandler<DidOpenTextDocumentHandler>();
-			_ = o.WithHandler<CodeActionTextDocumentHandler>();
-		});
+		var server = LanguageServer.Create(o => o
+			.WithInput(input)
+			.WithOutput(output)
+			.WithServerInfo(info)
+			.WithServices(ConfigureServices)
+			.WithUnhandledExceptionHandler(OnUnhandledException)
+			.WithResponseExceptionFactory(ResponseExceptionFactory)
+			.WithHandler<InitializedHandler>()
+			.WithHandler<DidOpenTextDocumentHandler>()
+		);
 
 		return server;
+	}
+
+	private Exception ResponseExceptionFactory(ServerError servererror, string message)
+	{
+		return new NotImplementedException();
+	}
+
+	private void OnUnhandledException(Exception exception)
+	{
+		logger.LogError(exception, "Unhandled exception");
+	}
+
+	private void ConfigureServices(IServiceCollection services)
+	{
+		if (options.LoggerFactory is { } loggerFactory)
+		{
+			_ = services
+				.AddLogging()
+				.RemoveAll<ILoggerFactory>()
+				.AddSingleton(loggerFactory);
+		}
+
+		_ = services
+			.AddSingleton<SessionState>()
+			.AddSingleton<DiagnosticsRunner>()
+			.AddTransient<IAnalyzer, UnusedDeclarationsAnalyzer>();
 	}
 }

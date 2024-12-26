@@ -10,23 +10,13 @@ public class UsagesAnalyzer
 		if (identifier.Type != TokenType.Identifier)
 			throw new InvalidOperationException($"Expected identifier, got {identifier.Type}");
 
-		var collector = new VariableCollector();
+		var collector = new VariableDeclarationCollector();
 
 		collector.Visit(document);
 
-		// gather all scopes into a flat list
-		var searchScopes = new Queue<VariableScope>([collector.RootScope]);
-		var allScopes = new List<VariableScope>();
-		while (searchScopes.TryDequeue(out var s))
-		{
-			foreach (var c in s.Children)
-				searchScopes.Enqueue(c);
-
-			allScopes.Add(s);
-		}
-
 		// find the scope that contains the identifier
-		var tightestScope = allScopes.FirstOrDefault();
+		var allScopes = collector.Scopes;
+		var tightestScope = collector.RootScope;
 		foreach (var scope in allScopes.OrderBy(s => s.OpenLocation.Line).ThenBy(s => s.OpenLocation.Column))
 		{
 			if (scope.OpenLocation.Line <= identifier.Location.Line &&
@@ -37,10 +27,6 @@ public class UsagesAnalyzer
 				tightestScope = scope;
 			}
 		}
-
-		if (tightestScope is null)
-			throw new InvalidOperationException(
-				$"Could not find scope for identifier {identifier.Value}; are they in the same document?");
 
 		return tightestScope.FindDeclaration(identifier.Value);
 	}

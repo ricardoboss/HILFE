@@ -4,21 +4,31 @@ using StepLang.Tokenizing;
 
 namespace StepLang.LSP.Diagnostics;
 
-public class VariableCollector : IStatementVisitor, IRootNodeVisitor, IExpressionEvaluator, IImportNodeVisitor
+public class VariableDeclarationCollector : IStatementVisitor, IRootNodeVisitor, IExpressionEvaluator, IImportNodeVisitor
 {
 	public VariableScope RootScope { get; }
 
 	private VariableScope currentScope;
 
-	public VariableCollector()
+	private readonly List<DeclaredVariableInfo> declarations = [];
+
+	public IReadOnlyList<DeclaredVariableInfo> Declarations => declarations;
+
+	private readonly List<VariableScope> scopes = [];
+
+	public IReadOnlyList<VariableScope> Scopes => scopes;
+
+	public VariableDeclarationCollector()
 	{
 		RootScope = new VariableScope(new TokenLocation());
 		currentScope = RootScope;
+		scopes.Add(RootScope);
 	}
 
 	private void PushScope(Token openToken)
 	{
 		currentScope = currentScope.EnterChildScope(openToken.Location);
+		scopes.Add(currentScope);
 	}
 
 	private void PopScope(Token closeToken)
@@ -42,11 +52,21 @@ public class VariableCollector : IStatementVisitor, IRootNodeVisitor, IExpressio
 
 	private void TrackDeclaration(IVariableDeclarationNode declaration)
 	{
-		if (currentScope.Declarations.TryAdd(declaration.Identifier.Value, declaration))
-			return;
+		var declarationInfo = new DeclaredVariableInfo
+		{
+			Name = declaration.Identifier.Value,
+			Declaration = declaration,
+			DeclaringScope = currentScope,
+		};
 
-		throw new InvalidOperationException(
-			$"Variable '{declaration.Identifier.Value}' is already declared in the current scope");
+		declarations.Add(declarationInfo);
+
+		if (!currentScope.Declarations.TryAdd(declaration.Identifier.Value, declaration))
+		{
+			// TODO: throw a better exception that results in a diagnostic
+			throw new InvalidOperationException(
+				$"Variable '{declaration.Identifier.Value}' is already declared in the current scope");
+		}
 	}
 
 	private void Visit(IEnumerable<StatementNode> nodes)
