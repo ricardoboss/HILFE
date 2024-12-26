@@ -5,10 +5,11 @@ namespace StepLang.LSP.Diagnostics;
 
 public class VariableScope(TokenLocation openLocation, VariableScope? parent = null)
 {
-	public readonly Dictionary<string, IVariableDeclarationNode> Declarations = new();
-	public readonly Dictionary<string, List<Token>> Usages = new();
-	public readonly VariableScope? Parent = parent;
-	public readonly List<VariableScope> Children = [];
+	public Dictionary<string, IVariableDeclarationNode> Declarations { get; } = new();
+	public Dictionary<string, List<Token>> Usages { get; } = new();
+	public VariableScope? Parent { get; } = parent;
+	public IReadOnlyList<VariableScope> Children => children;
+	private readonly List<VariableScope> children = [];
 
 	public TokenLocation OpenLocation => openLocation;
 
@@ -18,7 +19,7 @@ public class VariableScope(TokenLocation openLocation, VariableScope? parent = n
 	{
 		var newScope = new VariableScope(openTokenLocation, this);
 
-		Children.Add(newScope);
+		children.Add(newScope);
 
 		return newScope;
 	}

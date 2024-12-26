@@ -6,7 +6,8 @@ namespace StepLang.LSP.Diagnostics;
 
 public class VariableCollector : IStatementVisitor, IRootNodeVisitor, IExpressionEvaluator, IImportNodeVisitor
 {
-	public readonly VariableScope RootScope;
+	public VariableScope RootScope { get; }
+
 	private VariableScope currentScope;
 
 	public VariableCollector()
@@ -62,7 +63,7 @@ public class VariableCollector : IStatementVisitor, IRootNodeVisitor, IExpressio
 	{
 		foreach (var n in nodes)
 		{
-			n.EvaluateUsing(this);
+			_ = n.EvaluateUsing(this);
 		}
 	}
 
