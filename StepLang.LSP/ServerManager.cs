@@ -2,34 +2,39 @@ using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
 using JetBrains.Annotations;
-using Lunet.Extensions.Logging.SpectreConsole;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Nerdbank.Streams;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Server;
 using StepLang.LSP.Handlers;
+using StepLang.LSP.Handlers.TextDocument;
 
 namespace StepLang.LSP;
 
-public class ServerManager
+public class ServerManager(ServerOptions options)
 {
-	public async Task<int> RunAsync(ServerOptions options, CancellationToken cancellationToken = default)
-	{
-		ArgumentNullException.ThrowIfNull(options);
+	private ILogger<ServerManager> logger => lazyLogger.Value;
+	private readonly Lazy<ILogger<ServerManager>> lazyLogger = new(() =>
+		options.LoggerFactory?.CreateLogger<ServerManager>() ?? NullLogger<ServerManager>.Instance);
 
+	public async Task<int> RunAsync(CancellationToken cancellationToken = default)
+	{
 		if (options.UseStandardIO)
 		{
 			return await HandleStandardIoAsync(cancellationToken);
 		}
 
-		await HandleSocketAsync(options, cancellationToken);
+		await HandleSocketAsync(cancellationToken);
 
 		return 0;
 	}
 
-	private async Task HandleSocketAsync(ServerOptions options, CancellationToken cancellationToken)
+	private async Task HandleSocketAsync(CancellationToken cancellationToken)
 	{
+		logger.LogInformation("Starting server on {Host}:{Port}", options.Host, options.Port);
+
 		using var socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
 
 		var endpoint = new IPEndPoint(IPAddress.Parse(options.Host), options.Port);
@@ -48,6 +53,9 @@ public class ServerManager
 		while (!cancellationToken.IsCancellationRequested)
 		{
 			var clientSocket = await serverSocket.AcceptAsync(cancellationToken);
+
+			logger.LogDebug("Client connected from {RemoteAddress}", clientSocket.RemoteEndPoint);
+
 			var clientTask = HandleClientAsync(clientSocket, cancellationToken);
 
 			clientTasks[clientSocket] = clientTask;
@@ -66,8 +74,7 @@ public class ServerManager
 		}
 		catch (Exception e)
 		{
-			await Console.Error.WriteLineAsync("Client task failed");
-			await Console.Error.WriteLineAsync(e.ToString());
+			logger.LogError(e, "Client handling failed");
 		}
 		finally
 		{
@@ -77,8 +84,10 @@ public class ServerManager
 		}
 	}
 
-	private static async Task<int> HandleStandardIoAsync(CancellationToken cancellationToken)
+	private async Task<int> HandleStandardIoAsync(CancellationToken cancellationToken)
 	{
+		logger.LogInformation("Starting server on standard input/output");
+
 		await using var input = Console.OpenStandardInput();
 		await using var output = Console.OpenStandardOutput();
 
@@ -92,38 +101,44 @@ public class ServerManager
 		return code ?? 0;
 	}
 
-	private static async Task HandleServerShutdownAsync(LanguageServer server, CancellationToken cancellationToken)
+	private async Task HandleServerShutdownAsync(LanguageServer server, CancellationToken cancellationToken)
 	{
 		await server.Initialize(cancellationToken);
 
 		await using var shutdownRegistration = cancellationToken.Register(server.ForcefulShutdown);
 
+		logger.LogDebug("Waiting for server exit...");
+
 		await server.WaitForExit;
+
+		logger.LogInformation("Server is shutting down");
 	}
 
 	[MustDisposeResource]
-	private static LanguageServer CreateServer(Stream input, Stream output)
+	private LanguageServer CreateServer(Stream input, Stream output)
 	{
 		var server = LanguageServer.Create(o =>
 		{
-			o.ServerInfo = new ServerInfo { Name = "STEP", Version = GitVersionInformation.FullSemVer, };
+			o.ServerInfo = new ServerInfo
+			{
+				Name = "STEP", Version = GitVersionInformation.FullSemVer,
+			};
 
 			o.Input = input.UsePipeReader();
 			o.Output = output.UsePipeWriter();
 
-			o.WithServices(s =>
-				s.AddLogging(b =>
-					b
-						.ClearProviders()
-						.AddSpectreConsole(new SpectreConsoleLoggerOptions { SingleLine = true, })
-						.AddLanguageProtocolLogging()
-						.SetMinimumLevel(LogLevel.Trace)
-				)
-			);
+			_ = o.WithServices(s =>
+			{
+				if (options.LoggerFactory is { } loggerFactory)
+					_ = s.AddLogging(b =>
+						b.Services.AddSingleton(loggerFactory)
+					);
+			});
 
-			o.WithHandler<SemanticTokensHandler>();
-			o.WithHandler<DefinitionHandler>();
-			o.WithHandler<DidOpenTextDocumentHandler>();
+			_ = o.WithHandler<SemanticTokensHandler>();
+			_ = o.WithHandler<DefinitionHandler>();
+			_ = o.WithHandler<DidOpenTextDocumentHandler>();
+			_ = o.WithHandler<CodeActionTextDocumentHandler>();
 		});
 
 		return server;

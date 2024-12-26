@@ -6,7 +6,6 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="JetBrains.Annotations"/>
-        <PackageReference Include="Lunet.Extensions.Logging.SpectreConsole"/>
         <PackageReference Include="OmniSharp.Extensions.LanguageServer"/>
     </ItemGroup>
 

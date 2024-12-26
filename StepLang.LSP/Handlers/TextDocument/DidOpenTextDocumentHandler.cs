@@ -10,7 +10,7 @@ using StepLang.Parsing;
 using StepLang.Tokenizing;
 using Range = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
 
-namespace StepLang.LSP.Handlers;
+namespace StepLang.LSP.Handlers.TextDocument;
 
 public class DidOpenTextDocumentHandler(ILogger<DidOpenTextDocumentHandler> logger, ILanguageServerFacade server)
 	: DidOpenTextDocumentHandlerBase
@@ -31,7 +31,7 @@ public class DidOpenTextDocumentHandler(ILogger<DidOpenTextDocumentHandler> logg
 
 	private async Task RunDiagnostics(TextDocumentItem document)
 	{
-		logger.LogInformation("Running diagnostics for {DocumentUri}", document.Uri);
+		logger.LogDebug("Running diagnostics for {DocumentUri}", document.Uri);
 
 		var text = await File.ReadAllTextAsync(
 			DocumentUri.GetFileSystemPath(document) ?? throw new InvalidOperationException()

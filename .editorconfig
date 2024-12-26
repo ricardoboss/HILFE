@@ -261,6 +261,9 @@ dotnet_diagnostic.CA1720.severity = none
 # CS1591: Missing XML comment for publicly visible type or member
 dotnet_diagnostic.CS1591.severity = none
 
+# CA1848: Use the LoggerMessage delegates
+dotnet_diagnostic.CA1848.severity = none
+
 [*.json]
 indent_size = 2
 indent_style = space

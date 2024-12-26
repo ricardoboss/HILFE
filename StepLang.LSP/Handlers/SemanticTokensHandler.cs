@@ -33,7 +33,7 @@ public class SemanticTokensHandler : SemanticTokensHandlerBase
 			);
 		}
 
-		builder.Commit();
+		_ = builder.Commit();
 	}
 
 	protected override Task<SemanticTokensDocument> GetSemanticTokensDocument(ITextDocumentIdentifierParams @params,
