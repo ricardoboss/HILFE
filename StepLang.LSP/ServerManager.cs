@@ -73,7 +73,7 @@ public class ServerManager(ServerOptions options)
 		{
 			await using var ioStream = new NetworkStream(clientSocket);
 
-			using var server = CreateServer(ioStream, ioStream);
+			using var server = await CreateServerAsync(ioStream, ioStream);
 
 			await HandleServerShutdownAsync(server, cancellationToken);
 		}
@@ -96,7 +96,7 @@ public class ServerManager(ServerOptions options)
 		await using var input = Console.OpenStandardInput();
 		await using var output = Console.OpenStandardOutput();
 
-		using var server = CreateServer(input, output);
+		using var server = await CreateServerAsync(input, output);
 
 		int? code = null;
 		using var _ = server.Exit.Subscribe(c => code = c);
@@ -108,8 +108,6 @@ public class ServerManager(ServerOptions options)
 
 	private async Task HandleServerShutdownAsync(LanguageServer server, CancellationToken cancellationToken)
 	{
-		await server.Initialize(cancellationToken);
-
 		await using var shutdownRegistration = cancellationToken.Register(server.ForcefulShutdown);
 
 		logger.LogDebug("Waiting for server exit...");
@@ -120,14 +118,14 @@ public class ServerManager(ServerOptions options)
 	}
 
 	[MustDisposeResource]
-	private LanguageServer CreateServer(Stream input, Stream output)
+	private async Task<LanguageServer> CreateServerAsync(Stream input, Stream output)
 	{
 		var info = new ServerInfo
 		{
 			Name = "STEP", Version = GitVersionInformation.FullSemVer,
 		};
 
-		var server = LanguageServer.Create(o => o
+		var server = await LanguageServer.From(o => o
 			.WithInput(input)
 			.WithOutput(output)
 			.WithServerInfo(info)
@@ -159,6 +157,10 @@ public class ServerManager(ServerOptions options)
 				.AddLogging()
 				.RemoveAll<ILoggerFactory>()
 				.AddSingleton(loggerFactory);
+		}
+		else
+		{
+			_ = services.AddLogging(b => b.AddLanguageProtocolLogging());
 		}
 
 		_ = services

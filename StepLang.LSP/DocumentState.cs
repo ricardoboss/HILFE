@@ -18,4 +18,9 @@ public class DocumentState
 	public RootNode? Ast { get; set; }
 
 	public FileSymbols? Symbols { get; set; }
+
+	public override string ToString()
+	{
+		return $"DocumentState: (v{Version}) {DocumentUri}";
+	}
 }

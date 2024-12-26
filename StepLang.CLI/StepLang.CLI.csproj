@@ -2,7 +2,7 @@
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
 		<AssemblyName>step</AssemblyName>
-		<PublishAot>true</PublishAot>
+<!--		<PublishAot>true</PublishAot>-->
 	</PropertyGroup>
 
 	<PropertyGroup Condition=" '$(Configuration)' != 'Debug' ">

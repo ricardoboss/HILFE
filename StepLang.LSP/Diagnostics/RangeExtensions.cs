@@ -10,8 +10,8 @@ public static class RangeExtensions
 	{
 		var start = new Position
 		{
-			Line = location.Line - 1,
-			Character = location.Column - 1,
+			Line = location.Line + 1,
+			Character = location.Column + 1,
 		};
 
 		var end = new Position

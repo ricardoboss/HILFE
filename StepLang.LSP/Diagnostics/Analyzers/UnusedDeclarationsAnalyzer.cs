@@ -35,10 +35,11 @@ public class UnusedDeclarationsAnalyzer(ILogger<UnusedDeclarationsAnalyzer> logg
 			return Task.CompletedTask;
 		}
 
-		foreach (var unusedDeclaration in unused)
-		{
-			sessionState.Diagnostics[documentState.DocumentUri].Add(CreateDiagnostic(unusedDeclaration));
-		}
+		var diagnostics = unused.Select(CreateDiagnostic).ToList();
+		var collection = sessionState.Diagnostics[documentState.DocumentUri];
+
+		foreach (var diagnostic in diagnostics)
+			collection.Add(diagnostic);
 
 		return Task.CompletedTask;
 	}

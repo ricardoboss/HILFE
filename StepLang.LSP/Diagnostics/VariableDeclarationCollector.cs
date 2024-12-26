@@ -61,6 +61,7 @@ public class VariableDeclarationCollector : IStatementVisitor, IRootNodeVisitor,
 
 		declarations.Add(declarationInfo);
 
+		// FIXME: there is probably a bug with inline function parameter declarations not having their own scope/not being declared in the function body scope but in the parent scope
 		if (!currentScope.Declarations.TryAdd(declaration.Identifier.Value, declaration))
 		{
 			// TODO: throw a better exception that results in a diagnostic

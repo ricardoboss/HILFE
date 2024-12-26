@@ -17,12 +17,6 @@
         "resolved": "1.0.0",
         "contentHash": "RCjKX1GjEjog2Ng8pE3cpRjpSN0GoVy2tNLX0/p1qfGhPsYPEMxl+MVql4RrrAocSYaNR3I72F0CH/7HpZnt8w=="
       },
-      "Microsoft.DotNet.ILCompiler": {
-        "type": "Direct",
-        "requested": "[9.0.0, )",
-        "resolved": "9.0.0",
-        "contentHash": "bbnlV2PbUmCQ8Ndpx0kJaicLyV28IU+4IzyctQLL57+DxrHurYr2qsJrC8+yD44Q0DyPfv2oM168c1Tk6Bxbmg=="
-      },
       "Microsoft.Extensions.DependencyInjection": {
         "type": "Direct",
         "requested": "(, )",

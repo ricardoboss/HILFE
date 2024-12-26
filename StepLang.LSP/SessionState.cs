@@ -1,5 +1,7 @@
 using Microsoft.Extensions.Logging;
+using OmniSharp.Extensions.LanguageServer.Protocol.Document;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 using StepLang.LSP.Diagnostics;
 using StepLang.Parsing;
 using StepLang.Tokenizing;
@@ -8,7 +10,7 @@ using System.Collections.ObjectModel;
 
 namespace StepLang.LSP;
 
-public class SessionState(ILogger<SessionState> logger, DiagnosticsRunner diagnosticsRunner)
+public class SessionState(ILogger<SessionState> logger, DiagnosticsRunner diagnosticsRunner, ILanguageServerFacade server)
 {
 	private readonly ConcurrentDictionary<Uri, DocumentState> documents = new();
 	public IReadOnlyDictionary<Uri, DocumentState> Documents => documents;
@@ -27,11 +29,14 @@ public class SessionState(ILogger<SessionState> logger, DiagnosticsRunner diagno
 			throw new InvalidOperationException("Document already exists");
 		}
 
-		_ = Diagnostics.AddOrUpdate(documentState.DocumentUri, [], (_, _) => []);
+		var collection = Diagnostics.AddOrUpdate(documentState.DocumentUri, [], (_, _) => []);
+		collection.CollectionChanged += (_, _) => SendDiagnostics(documentState.DocumentUri);
 
 		RecalculateDocument(documentState);
 
 		RecalculateSymbols();
+
+		QueueAnalysis(documentState);
 	}
 
 	public void UpdateDocument(Uri documentUri, int version, string text)
@@ -45,13 +50,12 @@ public class SessionState(ILogger<SessionState> logger, DiagnosticsRunner diagno
 			return;
 		}
 
-		_ = Diagnostics.AddOrUpdate(documentUri, [], (_, _) => []);
+		var collection = Diagnostics.AddOrUpdate(documentUri, [], (_, _) => []);
+		collection.CollectionChanged += (_, _) => SendDiagnostics(documentUri);
 
 		var newDocumentState = new DocumentState
 		{
-			DocumentUri = documentUri,
-			Version = version,
-			Text = text,
+			DocumentUri = documentUri, Version = version, Text = text,
 		};
 
 		documents[documentUri] = newDocumentState;
@@ -59,6 +63,20 @@ public class SessionState(ILogger<SessionState> logger, DiagnosticsRunner diagno
 		RecalculateDocument(newDocumentState);
 
 		RecalculateSymbols();
+
+		QueueAnalysis(newDocumentState);
+	}
+
+	private void SendDiagnostics(Uri documentUri)
+	{
+		logger.LogTrace("Sending diagnostics for document {DocumentUri}", documentUri);
+
+		server.TextDocument.PublishDiagnostics(new PublishDiagnosticsParams
+		{
+			Uri = documentUri,
+			Diagnostics = Diagnostics[documentUri],
+			Version = Documents[documentUri].Version,
+		});
 	}
 
 	private void RecalculateDocument(DocumentState documentState)
@@ -124,7 +142,9 @@ public class SessionState(ILogger<SessionState> logger, DiagnosticsRunner diagno
 			{
 				_ = symbols.AddOrUpdate(declaration.Name, declaration, (_, old) =>
 				{
-					logger.LogWarning("Replacing declaration for symbol {SymbolName} (previously declared at {OldDeclaration})", declaration.Name, old);
+					logger.LogWarning(
+						"Replacing declaration for symbol {SymbolName} (previously declared at {OldDeclaration})",
+						declaration.Name, old);
 
 					return declaration;
 				});
