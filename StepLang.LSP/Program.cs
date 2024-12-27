@@ -37,7 +37,7 @@ app.Configure(config =>
 	config.SetInterceptor(interceptor);
 
 	config.AddExample("--stdio");
-	config.AddExample("--port 12345");
+	config.AddExample("--port=12345");
 	config.AddExample("--version");
 
 });
