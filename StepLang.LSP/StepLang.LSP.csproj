@@ -6,15 +6,6 @@
 		<IsAotCompatible>false</IsAotCompatible>
 	</PropertyGroup>
 
-	<PropertyGroup Condition=" '$(Configuration)' != 'Debug' ">
-		<DebugType>embedded</DebugType>
-	</PropertyGroup>
-
-	<PropertyGroup Condition=" '$(Configuration)' == 'Test' ">
-		<DefineConstants>TRACE;RELEASE</DefineConstants>
-		<Optimize>true</Optimize>
-	</PropertyGroup>
-
 	<ItemGroup>
 		<PackageReference Include="GitVersion.MsBuild">
 			<PrivateAssets>all</PrivateAssets>
@@ -23,23 +14,11 @@
 		<PackageReference Include="JetBrains.Annotations"/>
 		<PackageReference Include="Lunet.Extensions.Logging.SpectreConsole" />
 		<PackageReference Include="OmniSharp.Extensions.LanguageServer"/>
-		<PackageReference Include="IDisposableAnalyzers">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
-		<PackageReference Include="ToStringWithoutOverrideAnalyzer">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
 	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\StepLang.Tooling.CLI\StepLang.Tooling.CLI.csproj" />
 		<ProjectReference Include="..\StepLang\StepLang.csproj"/>
-	</ItemGroup>
-
-	<ItemGroup>
-		<AdditionalFiles Include="../CSharpExtensions.json"/>
 	</ItemGroup>
 
 </Project>
