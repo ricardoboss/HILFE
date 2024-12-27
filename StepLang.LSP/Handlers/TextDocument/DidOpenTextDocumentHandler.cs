@@ -6,7 +6,7 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace StepLang.LSP.Handlers.TextDocument;
 
-public class DidOpenTextDocumentHandler(ILogger<DidOpenTextDocumentHandler> logger, SessionState state)
+internal sealed class DidOpenTextDocumentHandler(ILogger<DidOpenTextDocumentHandler> logger, SessionState state)
 	: DidOpenTextDocumentHandlerBase
 {
 	protected override TextDocumentOpenRegistrationOptions CreateRegistrationOptions(
