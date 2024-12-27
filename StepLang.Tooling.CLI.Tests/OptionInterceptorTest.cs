@@ -19,8 +19,12 @@ public class OptionInterceptorTest
 
 		var context = new CommandContext([], remainingArgumentsMock.Object, "test", null);
 
-		var interceptor = new OptionInterceptor(consoleMock.Object, metadataProviderMock.Object,
-			new Dictionary<string, IMetadataProvider>());
+		var interceptor = new OptionInterceptor(
+			consoleMock.Object,
+			metadataProviderMock.Object,
+			new Dictionary<string, IMetadataProvider>(),
+			() => { }
+		);
 
 		var settings = new EmptyCommandSettings();
 
@@ -43,8 +47,12 @@ public class OptionInterceptorTest
 
 		var context = new CommandContext([], remainingArgumentsMock.Object, "test", null);
 
-		var interceptor = new OptionInterceptor(consoleMock.Object, metadataProviderMock.Object,
-			new Dictionary<string, IMetadataProvider>());
+		var interceptor = new OptionInterceptor(
+			consoleMock.Object,
+			metadataProviderMock.Object,
+			new Dictionary<string, IMetadataProvider>(),
+			() => { }
+		);
 
 		var settings = new EmptyGlobalCommandSettings { Info = false, Version = false, };
 
@@ -80,8 +88,12 @@ public class OptionInterceptorTest
 
 		var context = new CommandContext([], remainingArgumentsMock.Object, "test", null);
 
-		var interceptor = new OptionInterceptor(consoleMock.Object, metadataProviderMock.Object,
-			new Dictionary<string, IMetadataProvider>());
+		var interceptor = new OptionInterceptor(
+			consoleMock.Object,
+			metadataProviderMock.Object,
+			new Dictionary<string, IMetadataProvider>(),
+			() => { }
+		);
 
 		var settings = new EmptyGlobalCommandSettings { Info = false, Version = true, };
 
@@ -145,11 +157,15 @@ public class OptionInterceptorTest
 
 		var context = new CommandContext([], remainingArgumentsMock.Object, "test", null);
 
-		var interceptor = new OptionInterceptor(consoleMock.Object, metadataProviderMock.Object,
+		var interceptor = new OptionInterceptor(
+			consoleMock.Object,
+			metadataProviderMock.Object,
 			new Dictionary<string, IMetadataProvider>
 			{
 				{ metadataComponentName, metadataProviderMock.Object },
-			});
+			},
+			() => { }
+		);
 
 		var settings = new EmptyGlobalCommandSettings { Info = true, Version = false, };
 

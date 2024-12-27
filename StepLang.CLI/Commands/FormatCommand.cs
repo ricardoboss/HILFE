@@ -34,9 +34,7 @@ internal sealed class FormatCommand : AsyncCommand<FormatCommand.Settings>
 	public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
 	{
 		if (settings.DryRun)
-		{
 			AnsiConsole.MarkupLineInterpolated($"[yellow][bold]Dry run mode enabled.[/] No files will be modified.[/]");
-		}
 
 		var filesOrDirs = settings.FilesOrDirs;
 		if (filesOrDirs is null or { Length: 0 })

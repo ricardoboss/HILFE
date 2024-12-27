@@ -31,7 +31,8 @@ app.Configure(config =>
 		{
 			{ "Core", CoreMetadataProvider.Instance },
 			{ "LSP Server", LspMetadataProvider.Instance },
-		}
+		},
+		() => Environment.Exit(0)
 	);
 
 	config.SetInterceptor(interceptor);

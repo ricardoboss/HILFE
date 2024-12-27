@@ -23,11 +23,6 @@ internal sealed class DefaultCommand : AsyncCommand<DefaultCommand.Settings>
 	{
 		if (settings.File == null)
 		{
-			if (settings is not { Info: false, Version: false })
-			{
-				return 0;
-			}
-
 			AnsiConsole.MarkupLine("[red]No file specified.[/]");
 
 			return 1;

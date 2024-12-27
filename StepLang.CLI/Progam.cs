@@ -57,7 +57,8 @@ internal static class Program
 				{
 					{ "Core", CoreMetadataProvider.Instance },
 					{ "Command Line Interface", CliMetadataProvider.Instance },
-				}
+				},
+				() => Environment.Exit(0)
 			);
 
 			config.SetInterceptor(interceptor);

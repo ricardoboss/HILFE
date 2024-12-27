@@ -9,7 +9,8 @@ namespace StepLang.Tooling.CLI;
 public sealed class OptionInterceptor(
 	IAnsiConsole console,
 	IMetadataProvider executingAssemblyMetadataProvider,
-	IReadOnlyDictionary<string, IMetadataProvider> componentMetadataProviders
+	IReadOnlyDictionary<string, IMetadataProvider> componentMetadataProviders,
+	Action onHandled
 ) : ICommandInterceptor
 {
 	public void Intercept(CommandContext context, CommandSettings settings)
@@ -20,10 +21,14 @@ public sealed class OptionInterceptor(
 		if (globalSettings.Version)
 		{
 			HandleVersionOption();
+
+			onHandled();
 		}
 		else if (globalSettings.Info)
 		{
 			HandleInfoOption();
+
+			onHandled();
 		}
 	}
 

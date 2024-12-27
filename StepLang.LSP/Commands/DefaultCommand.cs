@@ -30,7 +30,8 @@ internal sealed class DefaultCommand : AsyncCommand<DefaultCommand.Settings>
 	}
 
 	public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
-	{var options = new ServerOptions
+	{
+		var options = new ServerOptions
 		{
 			Host = settings.Host ?? "127.0.0.1", Port = settings.Port ?? 14246, UseStandardIO = settings.Stdio,
 		};
