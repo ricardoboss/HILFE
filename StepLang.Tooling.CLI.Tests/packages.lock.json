@@ -431,18 +431,15 @@
       },
       "Spectre.Console": {
         "type": "Transitive",
-        "resolved": "0.45.0",
-        "contentHash": "e//13o8/BCrWmwN26eJ4zCzD2iq7iUlqQd+nDI9nJUdnJ/rYAanYiNFZZ7YHwlv48IKuKtRYYP6/wPt1DG67ww==",
-        "dependencies": {
-          "System.Memory": "4.5.5"
-        }
+        "resolved": "0.49.1",
+        "contentHash": "USV+pdu49OJ3nCjxNuw1K9Zw/c1HCBbwbjXZp0EOn6wM99tFdAtN34KEBZUMyRuJuXlUMDqhd8Yq9obW2MslYA=="
       },
       "Spectre.Console.Cli": {
         "type": "Transitive",
-        "resolved": "0.45.0",
-        "contentHash": "SZcYjwEmmYgmTDqOluWFYtURI9bgRtmx3tSdslHsMU9lKWkev3UHEkzDbOtu4XwY+hCn9NOjBRSDWNafa4fyCQ==",
+        "resolved": "0.49.1",
+        "contentHash": "wBZzyEbKqfPFFUPhV5E7/k4Kwy4UDO42IVzvzk0C4Pkjjw+NSd0EOBkIutYET4vJY4X81pD9ooQO9gfBGXj4+g==",
         "dependencies": {
-          "Spectre.Console": "0.45.0"
+          "Spectre.Console": "0.49.1"
         }
       },
       "System.AppContext": {
@@ -860,11 +857,6 @@
           "System.Runtime.Extensions": "4.3.0",
           "System.Threading": "4.3.0"
         }
-      },
-      "System.Memory": {
-        "type": "Transitive",
-        "resolved": "4.5.5",
-        "contentHash": "XIWiDvKPXaTveaB7HVganDlOCRoj03l+jrwNvcge/t8vhGYKvqV+dMv6G4SAX2NoNmN0wZfVPTAlFwZcZvVOUw=="
       },
       "System.Net.Http": {
         "type": "Transitive",
@@ -1544,8 +1536,8 @@
       "steplang.tooling.cli": {
         "type": "Project",
         "dependencies": {
-          "SmartAnalyzers.CSharpExtensions.Annotations": "(, )",
-          "Spectre.Console.Cli": "(, )",
+          "SmartAnalyzers.CSharpExtensions.Annotations": "[4.2.11, )",
+          "Spectre.Console.Cli": "[0.49.1, )",
           "StepLang.Tooling.Meta": "[1.0.0, )"
         }
       },
