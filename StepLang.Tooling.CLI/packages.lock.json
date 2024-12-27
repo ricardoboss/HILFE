@@ -63,7 +63,7 @@
       "steplang.tooling.meta": {
         "type": "Project",
         "dependencies": {
-          "SmartAnalyzers.CSharpExtensions.Annotations": "(, )"
+          "SmartAnalyzers.CSharpExtensions.Annotations": "[4.2.11, )"
         }
       }
     }
