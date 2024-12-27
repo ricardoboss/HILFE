@@ -1,7 +1,10 @@
 using Spectre.Console;
 using Spectre.Console.Cli;
+using StepLang;
+using StepLang.LSP;
 using StepLang.LSP.Commands;
 using StepLang.Tooling.CLI;
+using StepLang.Tooling.Meta;
 
 const string slogan = "STEP LSP - LSP Server for STEP";
 
@@ -23,8 +26,12 @@ app.Configure(config =>
 
 	var interceptor = new OptionInterceptor(
 		config.Settings.Console ?? AnsiConsole.Console,
-		gitVersionProvider: new GitVersionProvider(),
-		buildTimeProvider: new BuildTimeProvider()
+		LspMetadataProvider.Instance,
+		new Dictionary<string, IMetadataProvider>
+		{
+			{ "Core", CoreMetadataProvider.Instance },
+			{ "LSP Server", LspMetadataProvider.Instance },
+		}
 	);
 
 	config.SetInterceptor(interceptor);
@@ -36,15 +43,3 @@ app.Configure(config =>
 });
 
 return await app.RunAsync(args);
-
-file sealed class GitVersionProvider : IGitVersionProvider
-{
-	public string FullSemVer => GitVersionInformation.FullSemVer;
-	public string Sha => GitVersionInformation.Sha;
-	public string BranchName => GitVersionInformation.BranchName;
-}
-
-file sealed class BuildTimeProvider : IBuildTimeProvider
-{
-	public DateTimeOffset BuildTimeUtc => DateTimeOffset.UtcNow;
-}
