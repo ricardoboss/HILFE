@@ -24,9 +24,6 @@ internal static class Program
 	[DynamicDependency(
 		DynamicallyAccessedMemberTypes.PublicParameterlessConstructor |
 		DynamicallyAccessedMemberTypes.PublicNestedTypes, typeof(ParseCommand))]
-	[DynamicDependency(
-		DynamicallyAccessedMemberTypes.PublicParameterlessConstructor |
-		DynamicallyAccessedMemberTypes.PublicNestedTypes, typeof(LspCommand))]
 	public static async Task<int> Main(string[] args)
 	{
 		const string slogan = "STEP - Simple Transition to Elevated Programming";
@@ -91,11 +88,6 @@ internal static class Program
 			config.AddCommand<ParseCommand>("parse")
 				.WithDescription("Parse a .step-file and print the AST to the console.")
 				.WithExample("parse my-script.step")
-				;
-
-			config.AddCommand<LspCommand>("lsp")
-				.WithDescription("Start the LSP server.")
-				.WithExample("lsp")
 				;
 		});
 
