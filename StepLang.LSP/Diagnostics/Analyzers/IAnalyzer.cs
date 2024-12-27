@@ -1,6 +1,6 @@
 namespace StepLang.LSP.Diagnostics.Analyzers;
 
-public interface IAnalyzer
+internal interface IAnalyzer
 {
 	string Name => GetType().Name;
 

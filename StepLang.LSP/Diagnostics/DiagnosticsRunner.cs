@@ -4,7 +4,7 @@ using StepLang.LSP.Diagnostics.Analyzers;
 
 namespace StepLang.LSP.Diagnostics;
 
-public class DiagnosticsRunner(IServiceProvider services, ILogger<DiagnosticsRunner> logger)
+internal sealed class DiagnosticsRunner(IServiceProvider services, ILogger<DiagnosticsRunner> logger)
 {
 	private readonly Lazy<IAnalyzer[]> lazyAnalyzers = new(() => services.GetServices<IAnalyzer>().ToArray());
 

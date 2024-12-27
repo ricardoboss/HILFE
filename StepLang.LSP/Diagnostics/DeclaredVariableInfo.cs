@@ -2,9 +2,11 @@ using StepLang.Parsing;
 
 namespace StepLang.LSP.Diagnostics;
 
-public class DeclaredVariableInfo
+internal sealed class DeclaredVariableInfo
 {
 	public required string Name { get; init; }
+
+	public required Uri DocumentUri { get; init; }
 
 	public required IVariableDeclarationNode Declaration { get; init; }
 

@@ -1,4 +1,4 @@
-using Lunet.Extensions.Logging.SpectreConsole;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Spectre.Console.Cli;
 using StepLang.Tooling.CLI;
@@ -31,63 +31,38 @@ internal sealed class DefaultCommand : AsyncCommand<DefaultCommand.Settings>
 
 	public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
 	{
-		var options = new ServerOptions
-		{
-			Host = settings.Host ?? "127.0.0.1", Port = settings.Port ?? 14246, UseStandardIO = settings.Stdio,
-		};
+		var services = new ServiceCollection();
 
-		SpectreConsoleLoggerProvider? loggerProvider = null;
-		if (!settings.Stdio)
-		{
-			// only when NOT using stdio, we add a logger that can use stdio for logging
-			var loggerOptions = new SpectreConsoleLoggerOptions
+		_ = services
+			.AddOptions<ServerOptions>()
+			.Configure(o =>
 			{
-				SingleLine = true,
-				IncludeNewLineBeforeMessage = false,
-				LogLevelFormatter = LogLevelFormatter,
-				CategoryFormatter = CategoryFormatter,
-			};
+				o.Host = settings.Host ?? "127.0.0.1";
+				o.Port = settings.Port ?? 14246;
+				o.UseStandardIO = settings.Stdio;
+			});
 
-			loggerProvider = new SpectreConsoleLoggerProvider(loggerOptions);
+		services.AddLogging(
+			b =>
+			{
+				b
+					.SetMinimumLevel(LogLevel.Trace)
+					.ClearProviders();
 
-			options.LoggerFactory = new LoggerFactory([loggerProvider]);
-		}
+				if (settings.Stdio)
+					return;
 
-		var server = new ServerManager(options);
+				b.AddSimpleSpectreConsole();
+			});
+
+		services.AddSingleton<ServerManager>();
+
+		await using var provider = services.BuildServiceProvider();
+
+		var server = provider.GetRequiredService<ServerManager>();
 
 		var exitCode = await server.RunAsync();
 
-		loggerProvider?.Dispose();
-
 		return exitCode;
-	}
-
-	private static void CategoryFormatter(SpectreConsoleLoggerOptions _, StringBuilder s, string c)
-	{
-		var className = c.Split('.').Last();
-		s.Append(className);
-		s.Append(": ");
-	}
-
-	private static void LogLevelFormatter(SpectreConsoleLoggerOptions _, StringBuilder s, LogLevel l)
-	{
-		s.Append("[[");
-		s.Append(GetLogLevelMarkup(l));
-		s.Append("]] ");
-	}
-
-	private static string GetLogLevelMarkup(LogLevel logLevel)
-	{
-		return logLevel switch
-		{
-			LogLevel.Trace => "[silver]trce[/]",
-			LogLevel.Debug => "[bold silver]dbug[/]",
-			LogLevel.Information => "[green]info[/]",
-			LogLevel.Warning => "[yellow]warn[/]",
-			LogLevel.Error => "[black on maroon]fail[/]",
-			LogLevel.Critical => "[white on maroon]crit[/]",
-			LogLevel.None => "[silver]none[/]",
-			_ => throw new ArgumentOutOfRangeException(nameof(logLevel)),
-		};
 	}
 }

@@ -5,12 +5,12 @@ namespace StepLang.LSP.Diagnostics;
 
 public class UsagesAnalyzer
 {
-	public IVariableDeclarationNode? FindDeclaration(RootNode document, Token identifier)
+	public IVariableDeclarationNode? FindDeclaration(Uri documentUri, RootNode document, Token identifier)
 	{
 		if (identifier.Type != TokenType.Identifier)
 			throw new InvalidOperationException($"Expected identifier, got {identifier.Type}");
 
-		var collector = new VariableDeclarationCollector();
+		var collector = new VariableDeclarationCollector(documentUri);
 
 		collector.Visit(document);
 

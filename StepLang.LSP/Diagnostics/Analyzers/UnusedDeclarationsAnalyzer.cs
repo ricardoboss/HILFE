@@ -3,7 +3,7 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace StepLang.LSP.Diagnostics.Analyzers;
 
-public class UnusedDeclarationsAnalyzer(ILogger<UnusedDeclarationsAnalyzer> logger) : IAnalyzer
+internal sealed class UnusedDeclarationsAnalyzer(ILogger<UnusedDeclarationsAnalyzer> logger) : IAnalyzer
 {
 	private const string DiagnosticCode = "unused-declaration";
 
@@ -53,7 +53,7 @@ public class UnusedDeclarationsAnalyzer(ILogger<UnusedDeclarationsAnalyzer> logg
 			Code = new DiagnosticCode(DiagnosticCode),
 			Message = $"Unused declaration '{unusedDeclaration.Name}'",
 			Severity = DiagnosticSeverity.Hint,
-			Range = unusedDeclaration.Declaration.Location.ToRange(),
+			Range = unusedDeclaration.Declaration.Location.ToRangeStart(),
 		};
 	}
 }

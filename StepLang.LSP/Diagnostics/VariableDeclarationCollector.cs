@@ -4,7 +4,7 @@ using StepLang.Tokenizing;
 
 namespace StepLang.LSP.Diagnostics;
 
-public class VariableDeclarationCollector : IStatementVisitor, IRootNodeVisitor, IExpressionEvaluator, IImportNodeVisitor
+internal sealed class VariableDeclarationCollector : IStatementVisitor, IRootNodeVisitor, IExpressionEvaluator, IImportNodeVisitor
 {
 	public VariableScope RootScope { get; }
 
@@ -18,8 +18,12 @@ public class VariableDeclarationCollector : IStatementVisitor, IRootNodeVisitor,
 
 	public IReadOnlyList<VariableScope> Scopes => scopes;
 
-	public VariableDeclarationCollector()
+	private readonly Uri documentUri;
+
+	public VariableDeclarationCollector(Uri documentUri)
 	{
+		this.documentUri = documentUri;
+
 		RootScope = new VariableScope(new TokenLocation());
 		currentScope = RootScope;
 		scopes.Add(RootScope);
@@ -54,6 +58,7 @@ public class VariableDeclarationCollector : IStatementVisitor, IRootNodeVisitor,
 	{
 		var declarationInfo = new DeclaredVariableInfo
 		{
+			DocumentUri = documentUri,
 			Name = declaration.Identifier.Value,
 			Declaration = declaration,
 			DeclaringScope = currentScope,

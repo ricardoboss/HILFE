@@ -1,11 +1,10 @@
 using StepLang.LSP.Diagnostics;
 using StepLang.Parsing;
 using StepLang.Tokenizing;
-using System.Diagnostics;
 
 namespace StepLang.LSP;
 
-public class DocumentState
+internal sealed class DocumentState
 {
 	public required Uri DocumentUri { get; init; }
 

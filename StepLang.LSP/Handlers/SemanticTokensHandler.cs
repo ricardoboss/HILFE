@@ -1,4 +1,4 @@
-using OmniSharp.Extensions.LanguageServer.Protocol;
+using Microsoft.Extensions.Logging;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Document;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
@@ -6,40 +6,48 @@ using StepLang.Tokenizing;
 
 namespace StepLang.LSP.Handlers;
 
-public class SemanticTokensHandler : SemanticTokensHandlerBase
+internal sealed class SemanticTokensHandler(ILogger<SemanticTokensHandler> logger, SessionState state)
+	: SemanticTokensHandlerBase
 {
-	protected override async Task Tokenize(
+	protected override Task Tokenize(
 		SemanticTokensBuilder builder,
 		ITextDocumentIdentifierParams identifier,
 		CancellationToken cancellationToken
 	)
 	{
-		ArgumentNullException.ThrowIfNull(builder);
+		var document = state.Documents[identifier.TextDocument.Uri.ToUri()];
+		if (document.Tokens is not { } tokens)
+		{
+			logger.LogWarning("Document {Document} is not fully processed; skipping semantic tokens", document);
 
-		var text = await File.ReadAllTextAsync(
-			DocumentUri.GetFileSystemPath(identifier) ?? throw new InvalidOperationException(), cancellationToken);
-
-		var tokens = new Tokenizer(text).Tokenize(cancellationToken).ToList();
+			return Task.CompletedTask;
+		}
 
 		foreach (var token in tokens.Where(t =>
 			         t.Type is not TokenType.Whitespace and not TokenType.NewLine and not TokenType.EndOfFile))
 		{
+			// shift by 1 because tokens in STEP are 1-indexed
 			builder.Push(
-				token.Location.Line,
-				token.Location.Column,
+				token.Location.Line - 1,
+				token.Location.Column - 1,
 				token.Location.Length,
 				new SemanticTokenType(token.Type.ToString()),
 				Array.Empty<SemanticTokenModifier>()
 			);
 		}
 
-		_ = builder.Commit();
+		return Task.CompletedTask;
 	}
 
-	protected override Task<SemanticTokensDocument> GetSemanticTokensDocument(ITextDocumentIdentifierParams @params,
+	protected override async Task<SemanticTokensDocument> GetSemanticTokensDocument(ITextDocumentIdentifierParams @params,
 		CancellationToken cancellationToken)
 	{
-		return Task.FromResult(new SemanticTokensDocument(RegistrationOptions.Legend));
+		var document = new SemanticTokensDocument(RegistrationOptions.Legend);
+		var builder = new SemanticTokensBuilder(document, RegistrationOptions.Legend);
+
+		await Tokenize(builder, @params, cancellationToken);
+
+		return builder.Commit();
 	}
 
 	protected override SemanticTokensRegistrationOptions CreateRegistrationOptions(SemanticTokensCapability? capability,

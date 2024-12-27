@@ -4,27 +4,23 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace StepLang.LSP.Handlers.TextDocument;
 
-public class CodeActionTextDocumentHandler : CodeActionHandlerBase
+internal sealed class CodeActionTextDocumentHandler : CodeActionHandlerBase
 {
 	protected override CodeActionRegistrationOptions CreateRegistrationOptions(CodeActionCapability capability,
 		ClientCapabilities clientCapabilities)
 	{
-		return new()
+		return new CodeActionRegistrationOptions
 		{
 			DocumentSelector = StepTextDocumentSelector.Instance,
 			ResolveProvider = false,
 			WorkDoneProgress = false,
-			CodeActionKinds = Container.From(CodeActionKind.Defaults),
+			CodeActionKinds = Container.From(CodeActionKind.Empty),
 		};
 	}
 
 	public override async Task<CommandOrCodeActionContainer?> Handle(CodeActionParams request, CancellationToken cancellationToken)
 	{
-		return new CommandOrCodeActionContainer(new CommandOrCodeAction(new CodeAction
-		{
-			Title = "Test",
-			Kind = CodeActionKind.QuickFix,
-		}));
+		return null;
 	}
 
 	public override async Task<CodeAction> Handle(CodeAction request, CancellationToken cancellationToken)

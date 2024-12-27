@@ -1,32 +1,30 @@
-using System.Collections.Concurrent;
-using System.Net;
-using System.Net.Sockets;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Nerdbank.Streams;
-using OmniSharp.Extensions.JsonRpc;
-using OmniSharp.Extensions.JsonRpc.Server;
+using Microsoft.Extensions.Options;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Server;
 using StepLang.LSP.Diagnostics;
 using StepLang.LSP.Diagnostics.Analyzers;
 using StepLang.LSP.Handlers;
 using StepLang.LSP.Handlers.TextDocument;
+using System.Collections.Concurrent;
+using System.Net;
+using System.Net.Sockets;
 
 namespace StepLang.LSP;
 
-public class ServerManager(ServerOptions options)
+internal sealed class ServerManager(
+	ILogger<ServerManager> logger,
+	IOptions<ServerOptions> delegateOptions,
+	IServiceProvider
+		services)
 {
-	private ILogger<ServerManager> logger => lazyLogger.Value;
-	private readonly Lazy<ILogger<ServerManager>> lazyLogger = new(() =>
-		options.LoggerFactory?.CreateLogger<ServerManager>() ?? NullLogger<ServerManager>.Instance);
+	private ServerOptions Options => delegateOptions.Value;
 
 	public async Task<int> RunAsync(CancellationToken cancellationToken = default)
 	{
-		if (options.UseStandardIO)
+		if (Options.UseStandardIO)
 		{
 			return await HandleStandardIoAsync(cancellationToken);
 		}
@@ -38,11 +36,11 @@ public class ServerManager(ServerOptions options)
 
 	private async Task HandleSocketAsync(CancellationToken cancellationToken)
 	{
-		logger.LogInformation("Starting server on {Host}:{Port}", options.Host, options.Port);
+		logger.LogInformation("Starting server on {Host}:{Port}", Options.Host, Options.Port);
 
 		using var socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
 
-		var endpoint = new IPEndPoint(IPAddress.Parse(options.Host), options.Port);
+		var endpoint = new IPEndPoint(IPAddress.Parse(Options.Host), Options.Port);
 
 		socket.Bind(endpoint);
 
@@ -85,7 +83,9 @@ public class ServerManager(ServerOptions options)
 		{
 			_ = clientTasks.TryRemove(clientSocket, out _);
 
+#pragma warning disable IDISP007
 			clientSocket.Dispose();
+#pragma warning restore IDISP007
 		}
 	}
 
@@ -120,28 +120,28 @@ public class ServerManager(ServerOptions options)
 	[MustDisposeResource]
 	private async Task<LanguageServer> CreateServerAsync(Stream input, Stream output)
 	{
-		var info = new ServerInfo
-		{
-			Name = "STEP", Version = GitVersionInformation.FullSemVer,
-		};
+		var info = new ServerInfo { Name = "STEP", Version = GitVersionInformation.FullSemVer };
 
-		var server = await LanguageServer.From(o => o
-			.WithInput(input)
-			.WithOutput(output)
-			.WithServerInfo(info)
-			.WithServices(ConfigureServices)
-			.WithUnhandledExceptionHandler(OnUnhandledException)
-			.WithResponseExceptionFactory(ResponseExceptionFactory)
-			.WithHandler<InitializedHandler>()
-			.WithHandler<DidOpenTextDocumentHandler>()
+		var server = await LanguageServer.From(o =>
+			{
+				o
+					.WithInput(input)
+					.WithOutput(output)
+					.WithServerInfo(info)
+					.WithServices(ConfigureServices)
+					.WithUnhandledExceptionHandler(OnUnhandledException)
+					.WithHandler<DidOpenTextDocumentHandler>()
+					.WithHandler<DidChangeTextDocumentHandler>()
+					.WithHandler<CodeActionTextDocumentHandler>()
+					.WithHandler<DidCloseTextDocumentHandler>()
+					.WithHandler<DefinitionHandler>()
+					.WithHandler<SemanticTokensHandler>()
+					;
+			},
+			services
 		);
 
 		return server;
-	}
-
-	private Exception ResponseExceptionFactory(ServerError servererror, string message)
-	{
-		return new NotImplementedException();
 	}
 
 	private void OnUnhandledException(Exception exception)
@@ -149,21 +149,23 @@ public class ServerManager(ServerOptions options)
 		logger.LogError(exception, "Unhandled exception");
 	}
 
-	private void ConfigureServices(IServiceCollection services)
+	private void ConfigureServices(IServiceCollection s)
 	{
-		if (options.LoggerFactory is { } loggerFactory)
-		{
-			_ = services
-				.AddLogging()
-				.RemoveAll<ILoggerFactory>()
-				.AddSingleton(loggerFactory);
-		}
-		else
-		{
-			_ = services.AddLogging(b => b.AddLanguageProtocolLogging());
-		}
+		_ = s
+			.AddLogging(b =>
+			{
+				b
+					.SetMinimumLevel(LogLevel.Trace)
+					.AddFilter("StepLang", LogLevel.Trace)
+					.ClearProviders()
+					.AddLanguageProtocolLogging();
 
-		_ = services
+				if (Options.UseStandardIO)
+					return;
+
+				// only when NOT using stdio, we add a logger that can use stdio for logging
+				b.AddSimpleSpectreConsole();
+			})
 			.AddSingleton<SessionState>()
 			.AddSingleton<DiagnosticsRunner>()
 			.AddTransient<IAnalyzer, UnusedDeclarationsAnalyzer>();
