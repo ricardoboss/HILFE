@@ -4,6 +4,7 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 using StepLang.LSP.Diagnostics;
 using StepLang.Parsing;
+using StepLang.Parsing.Nodes;
 using StepLang.Tokenizing;
 using System.Collections.Concurrent;
 using System.Collections.Immutable;

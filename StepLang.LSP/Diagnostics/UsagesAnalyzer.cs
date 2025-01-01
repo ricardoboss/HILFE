@@ -1,4 +1,5 @@
-using StepLang.Parsing;
+using StepLang.Parsing.Nodes;
+using StepLang.Parsing.Nodes.VariableDeclarations;
 using StepLang.Tokenizing;
 
 namespace StepLang.LSP.Diagnostics;

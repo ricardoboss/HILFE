@@ -4,7 +4,6 @@ using Spectre.Console.Cli;
 using StepLang.Tooling.CLI;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
-using System.Text;
 
 namespace StepLang.LSP.Commands;
 
