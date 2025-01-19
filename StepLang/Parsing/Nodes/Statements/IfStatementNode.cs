@@ -5,7 +5,7 @@ namespace StepLang.Parsing.Nodes.Statements;
 
 public sealed record IfStatementNode(
 	Token IfKeywordToken,
-	LinkedList<(ExpressionNode, CodeBlockStatementNode)> ConditionBodyMap) : StatementNode
+	LinkedList<(ExpressionNode, StatementNode)> ConditionBodyMap) : StatementNode
 {
 	public override void Accept(IStatementVisitor visitor)
 	{

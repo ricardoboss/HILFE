@@ -1,5 +1,5 @@
 using StepLang.Parsing;
-using StepLang.Parsing.Nodes;
+using StepLang.Parsing.Nodes.Import;
 using StepLang.Tokenizing;
 
 namespace StepLang.Interpreting;
@@ -40,12 +40,18 @@ public partial class Interpreter : IImportNodeVisitor
 		}
 
 		var source = CharacterSource.FromFile(importedFile);
-		var tokenizer = new Tokenizer(source);
+		// TODO: handle diagnostics differently?
+		var tokenizer = new Tokenizer(source, []);
 		var tokens = tokenizer.Tokenize();
 
-		var parser = new Parser(tokens);
+		var parser = new Parser(tokens, []);
 		var root = parser.ParseRoot();
 
 		Visit(root);
+	}
+
+	public void Visit(ErrorImportNode importNode)
+	{
+		throw new NotSupportedException("Cannot interpret imports with errors");
 	}
 }

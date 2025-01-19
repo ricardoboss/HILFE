@@ -1,8 +1,8 @@
 using StepLang.Tokenizing;
 
-namespace StepLang.Parsing.Nodes;
+namespace StepLang.Parsing.Nodes.Import;
 
-public sealed record ImportNode(Token PathToken) : IVisitableNode<IImportNodeVisitor>
+public sealed record ImportNode(Token PathToken) : IImportNode
 {
 	public void Accept(IImportNodeVisitor visitor)
 	{

@@ -6,7 +6,7 @@ public class Highlighter(ColorScheme scheme)
 {
 	public IEnumerable<StyledToken> Highlight(string sourceCode)
 	{
-		var tokenizer = new Tokenizer(sourceCode, false);
+		var tokenizer = new Tokenizer(sourceCode, []);
 
 		foreach (var token in tokenizer.Tokenize())
 		{
@@ -56,6 +56,7 @@ public class Highlighter(ColorScheme scheme)
 			TokenType.ImportKeyword => scheme.Keyword,
 			TokenType.ForEachKeyword => scheme.Keyword,
 			TokenType.InKeyword => scheme.Keyword,
+			TokenType.Error => scheme.Error,
 			_ => scheme.Default,
 		};
 	}

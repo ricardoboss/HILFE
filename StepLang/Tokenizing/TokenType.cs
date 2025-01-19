@@ -45,6 +45,7 @@ public enum TokenType
 	ForEachKeyword,
 	InKeyword,
 	EndOfFile,
+	Error,
 }
 
 public static class TokenTypes
@@ -95,6 +96,7 @@ public static class TokenTypes
 			TokenType.ForEachKeyword => "'foreach'",
 			TokenType.InKeyword => "'in'",
 			TokenType.EndOfFile => "end of file",
+			TokenType.Error => "error",
 			_ => throw new ArgumentOutOfRangeException(nameof(type), type, "Unknown token type"),
 		};
 	}

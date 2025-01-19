@@ -1,8 +1,10 @@
-﻿{
-  "ErrorCode": "INT007",
-  "Message": "Cannot assign a value of type string to a variable declared as number (at incompatible-types.step:1:10)",
-  "HelpText": "Make sure the value you are trying to assign to a is of type number and not null.",
-  "Line": 1,
-  "Column": 10,
-  "Length": 1
-}
+﻿[
+  {
+    "ErrorCode": "INT007",
+    "Message": "Cannot assign a value of type string to a variable declared as number (at incompatible-types.step:1:10)",
+    "HelpText": "Make sure the value you are trying to assign to a is of type number and not null.",
+    "Line": 1,
+    "Column": 10,
+    "Length": 1
+  }
+]

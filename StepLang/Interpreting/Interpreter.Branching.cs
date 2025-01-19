@@ -14,7 +14,7 @@ public partial class Interpreter
 				continue;
 			}
 
-			Visit(body);
+			body.Accept(this);
 
 			break;
 		}

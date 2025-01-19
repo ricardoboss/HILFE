@@ -12,15 +12,15 @@ namespace StepLang.Expressions;
 public class UserDefinedFunctionDefinition(
 	TokenLocation location,
 	IReadOnlyList<IVariableDeclarationNode> parameters,
-	CodeBlockStatementNode body,
+	StatementNode body,
 	Scope capturedScope)
 	: FunctionDefinition
 {
-	protected override string DebugBodyString => $"[{Body.Statements.Count} statements]";
+	protected override string DebugBodyString => $"[Body: {Body.GetType().Name}]";
 
 	public override IReadOnlyList<IVariableDeclarationNode> Parameters => parameters;
 
-	public CodeBlockStatementNode Body { get; } = body;
+	public StatementNode Body { get; } = body;
 
 	// TODO: implement return type declarations on user defined functions
 	protected override IEnumerable<ResultType> ReturnTypes => Enum.GetValues<ResultType>();

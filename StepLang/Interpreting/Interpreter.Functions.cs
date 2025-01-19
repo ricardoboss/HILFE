@@ -9,16 +9,20 @@ public partial class Interpreter
 {
 	public void Visit(CallStatementNode statementNode)
 	{
-		var variable = CurrentScope.GetVariable(statementNode.CallExpression.Identifier);
+		var calledExpression = statementNode.CallExpression;
+		if (calledExpression is not CallExpressionNode node)
+			throw new InvalidExpressionTypeException(calledExpression.Location, "a callable expression",
+				calledExpression.GetType().Name);
+
+		var variable = CurrentScope.GetVariable(node.Identifier);
 		if (variable.Value is not FunctionResult function)
 		{
-			throw new InvalidResultTypeException(statementNode.CallExpression.Location, variable.Value,
-				ResultType.Function);
+			throw new InvalidResultTypeException(node.Location, variable.Value, ResultType.Function);
 		}
 
 		// TODO: check if function returns anything other than void and abort call
 
-		var result = function.Value.Invoke(statementNode.Location, this, statementNode.CallExpression.Arguments);
+		var result = function.Value.Invoke(statementNode.Location, this, node.Arguments);
 		if (result is not VoidResult)
 		{
 			throw new InvalidResultTypeException(statementNode.Location, result, ResultType.Void);

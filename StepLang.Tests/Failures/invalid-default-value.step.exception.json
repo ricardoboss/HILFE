@@ -1,8 +1,10 @@
-{
-  "ErrorCode": "INT007",
-  "Message": "Cannot assign a value of type string to a variable declared as number (at invalid-default-value.step:1:24)",
-  "HelpText": "Make sure the value you are trying to assign to i is of type number and not null.",
-  "Line": 1,
-  "Column": 24,
-  "Length": 1
-}
+[
+  {
+    "ErrorCode": "INT007",
+    "Message": "Cannot assign a value of type string to a variable declared as number (at invalid-default-value.step:1:24)",
+    "HelpText": "Make sure the value you are trying to assign to i is of type number and not null.",
+    "Line": 1,
+    "Column": 24,
+    "Length": 1
+  }
+]

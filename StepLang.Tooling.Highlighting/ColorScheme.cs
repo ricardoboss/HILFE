@@ -13,7 +13,9 @@ public record ColorScheme(
 	Style Null,
 	Style Comment,
 	Style Operator,
-	Style Punctuation)
+	Style Punctuation,
+	Style Error
+)
 {
 	public static IEnumerable<string> Names => ["Pale", "Dim", "Mono"];
 
@@ -39,7 +41,8 @@ public record ColorScheme(
 		new Style(Color.CadetBlue),
 		new Style(Color.Gray, true),
 		new Style(Color.White),
-		new Style(Color.White)
+		new Style(Color.White),
+		new Style(Color.IndianRed)
 	);
 
 	public static ColorScheme Dim { get; } = new(
@@ -53,7 +56,8 @@ public record ColorScheme(
 		new Style(Color.CadetBlue),
 		new Style(Color.DarkGray, true),
 		new Style(Color.Black),
-		new Style(Color.Black)
+		new Style(Color.Black),
+		new Style(Color.DarkRed)
 	);
 
 	public static ColorScheme Mono { get; } = new(
@@ -67,6 +71,7 @@ public record ColorScheme(
 		new Style(Color.DarkGray, true),
 		new Style(Color.DimGray, true),
 		new Style(Color.Gray),
-		new Style(Color.Gray)
+		new Style(Color.Gray),
+		new Style(Color.DimGray)
 	);
 }

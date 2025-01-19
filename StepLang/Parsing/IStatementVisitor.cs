@@ -24,4 +24,5 @@ public interface IStatementVisitor
 	void Visit(VariableDeclarationStatementNode statementNode);
 	void Visit(ReturnStatementNode statementNode);
 	void Visit(DiscardStatementNode discardStatementNode);
+	void Visit(ErrorStatementNode errorStatementNode);
 }

@@ -38,4 +38,5 @@ public interface IExpressionEvaluator
 	ExpressionResult Evaluate(FunctionDefinitionCallExpressionNode expressionNode);
 	ExpressionResult Evaluate(NativeFunctionDefinitionExpressionNode expressionNode);
 	ExpressionResult Evaluate(IndexAccessExpressionNode expressionNode);
+	ExpressionResult Evaluate(ErrorExpressionNode expressionNode);
 }

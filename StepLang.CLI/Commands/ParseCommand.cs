@@ -1,14 +1,18 @@
 using Spectre.Console;
 using Spectre.Console.Cli;
+using StepLang.Diagnostics;
 using StepLang.Expressions.Results;
 using StepLang.Interpreting;
 using StepLang.Parsing;
 using StepLang.Parsing.Nodes;
 using StepLang.Parsing.Nodes.Expressions;
+using StepLang.Parsing.Nodes.Import;
 using StepLang.Parsing.Nodes.Statements;
 using StepLang.Parsing.Nodes.VariableDeclarations;
 using StepLang.Tokenizing;
 using StepLang.Tooling.CLI;
+using StepLang.Tooling.CLI.Widgets;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 
@@ -28,18 +32,38 @@ internal sealed class ParseCommand : AsyncCommand<ParseCommand.Settings>
 	{
 		var scriptFile = new FileInfo(settings.File);
 		var source = await CharacterSource.FromFileAsync(scriptFile);
-		var tokenizer = new Tokenizer(source);
+		var diagnostics = new DiagnosticCollection();
+		diagnostics.CollectionChanged += (_, e) =>
+		{
+			if (e is { Action: NotifyCollectionChangedAction.Add, NewItems: not null })
+			{
+				ReportDiagnostics(e.NewItems);
+			}
+		};
+
+		var tokenizer = new Tokenizer(source, diagnostics);
 		var tokens = tokenizer.Tokenize();
-		var parser = new Parser(tokens);
+		var parser = new Parser(tokens, diagnostics);
 		var root = parser.ParseRoot();
 
 		var tree = new Tree(scriptFile.Name);
 		var treeBuilder = new RootTreeBuilder(tree);
+
 		root.Accept(treeBuilder);
 
 		AnsiConsole.Write(tree);
 
 		return 0;
+	}
+
+	private static void ReportDiagnostics(IReadOnlyList<Diagnostic> eNewItems)
+	{
+		foreach (var diagnostic in eNewItems)
+		{
+			var line = new DiagnosticLine(diagnostic);
+
+			AnsiConsole.Write(line);
+		}
 	}
 
 	private sealed class RootTreeBuilder(IHasTreeNodes root) : IRootNodeVisitor
@@ -76,6 +100,11 @@ internal sealed class ParseCommand : AsyncCommand<ParseCommand.Settings>
 		public void Visit(ImportNode importNode)
 		{
 			_ = parent.AddNode("Import: " + importNode.PathToken.StringValue);
+		}
+
+		public void Visit(ErrorImportNode importNode)
+		{
+			_ = parent.AddNode("ErrorImport: " + importNode.Description);
 		}
 	}
 
@@ -315,6 +344,19 @@ internal sealed class ParseCommand : AsyncCommand<ParseCommand.Settings>
 			var expressionTreeBuilder = new ExpressionTreeBuilder(expressionNode);
 			_ = discardStatementNode.Expression.EvaluateUsing(expressionTreeBuilder);
 		}
+
+		public void Visit(ErrorStatementNode errorStatementNode)
+		{
+			var node = root.AddNode("ErrorStatement");
+
+			_ = node.AddNode("Description: " + errorStatementNode.Description.EscapeMarkup());
+			var tokensNode = node.AddNode("Tokens:");
+
+			foreach (var token in errorStatementNode.Tokens.OfType<Token>())
+			{
+				tokensNode.AddNode(token.ToString().EscapeMarkup());
+			}
+		}
 	}
 
 	private sealed class VariableDeclarationTreeBuilder(IHasTreeNodes root) : IVariableDeclarationEvaluator
@@ -361,6 +403,14 @@ internal sealed class ParseCommand : AsyncCommand<ParseCommand.Settings>
 			var expressionNode = node.AddNode("Expression:");
 			var expressionTreeBuilder = new ExpressionTreeBuilder(expressionNode);
 			_ = variableDeclarationNode.Expression.EvaluateUsing(expressionTreeBuilder);
+
+			return DummyVariable;
+		}
+
+		public Variable Evaluate(ErrorVariableDeclarationNode variableDeclarationNode)
+		{
+			var node = root.AddNode("ErrorVariableDeclaration:");
+			node.AddNode("Description: " + variableDeclarationNode.Description.EscapeMarkup());
 
 			return DummyVariable;
 		}
@@ -725,6 +775,21 @@ internal sealed class ParseCommand : AsyncCommand<ParseCommand.Settings>
 			var index = node.AddNode("Index:");
 			var indexNodeTreeBuilder = new ExpressionTreeBuilder(index);
 			_ = expressionNode.Index.EvaluateUsing(indexNodeTreeBuilder);
+
+			return VoidResult.Instance;
+		}
+
+		public ExpressionResult Evaluate(ErrorExpressionNode expressionNode)
+		{
+			var node = root.AddNode("ErrorExpression");
+
+			_ = node.AddNode("Description: " + expressionNode.Description.EscapeMarkup());
+			var tokensNode = node.AddNode("Tokens:");
+
+			foreach (var token in expressionNode.Tokens.OfType<Token>())
+			{
+				tokensNode.AddNode(token.ToString().EscapeMarkup());
+			}
 
 			return VoidResult.Instance;
 		}

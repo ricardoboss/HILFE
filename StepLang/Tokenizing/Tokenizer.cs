@@ -1,3 +1,4 @@
+using StepLang.Diagnostics;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text;
@@ -9,17 +10,17 @@ public class Tokenizer
 {
 	private readonly StringBuilder tokenBuilder = new();
 	private readonly CharacterSource source;
-	private readonly bool strict;
+	private readonly DiagnosticCollection diagnostics;
 
 	private TokenLocation tokenStartLocation;
 	private char? stringQuote;
 	private bool escaped;
 	private int? stringSourceLength;
 
-	public Tokenizer(CharacterSource source, bool strict = true)
+	public Tokenizer(CharacterSource source, DiagnosticCollection diagnostics)
 	{
 		this.source = source;
-		this.strict = strict;
+		this.diagnostics = diagnostics;
 
 		tokenStartLocation = GetCurrentLocation();
 	}
@@ -34,7 +35,7 @@ public class Tokenizer
 
 		var column = source.Column - length;
 
-		return new TokenLocation(source.DocumentUri, source.Line, column, length);
+		return new(source.DocumentUri, source.Line, column, length);
 	}
 
 	public IEnumerable<Token> Tokenize(CancellationToken cancellationToken = default)
@@ -80,8 +81,14 @@ public class Tokenizer
 				yield return token;
 		}
 
-		if (stringQuote.HasValue && strict)
-			throw new UnterminatedStringException(tokenStartLocation, stringQuote!.Value);
+		if (stringQuote.HasValue)
+		{
+			var errorToken = FinalizeToken(TokenType.Error);
+
+			diagnostics.AddUnterminatedString(errorToken);
+
+			yield return errorToken;
+		}
 
 		if (tokenBuilder.Length == 0)
 		{
@@ -167,20 +174,33 @@ public class Tokenizer
 		// strings can't contain unescaped control characters
 		if (char.IsControl(c))
 		{
-			if (strict)
-				throw new UnterminatedStringException(tokenStartLocation, stringQuote!.Value);
+			var unterminatedStringErrorToken = FinalizeToken(TokenType.Error);
+
+			diagnostics.AddUnterminatedString(unterminatedStringErrorToken);
+
+			yield return unterminatedStringErrorToken;
 
 			stringQuote = null;
-
-			yield return FinalizeToken(TokenType.LiteralString);
-
 			stringSourceLength = null;
 
-			if (c is not '\n')
-				yield break;
-
 			tokenBuilder.Append(c);
-			yield return FinalizeToken(TokenType.NewLine);
+			tokenStartLocation = unterminatedStringErrorToken.Location with
+			{
+				Column = unterminatedStringErrorToken.Location.Column + unterminatedStringErrorToken.Location.Length,
+			};
+
+			if (c is '\n')
+			{
+				yield return FinalizeToken(TokenType.NewLine);
+
+				yield break;
+			}
+
+			var errorToken = FinalizeToken(TokenType.Error);
+
+			diagnostics.AddUnescapedControlCharacter(errorToken);
+
+			yield return errorToken;
 
 			yield break;
 		}
@@ -196,6 +216,7 @@ public class Tokenizer
 				yield return previous;
 
 			yield return FinalizeToken(symbolType.Value);
+
 			yield break;
 		}
 
@@ -236,10 +257,15 @@ public class Tokenizer
 		if (!allowIdentifier)
 			return null;
 
-		if (tokenValue.IsValidIdentifier() || !strict)
+		if (tokenValue.IsValidIdentifier())
 			return FinalizeToken(TokenType.Identifier);
 
-		throw new InvalidIdentifierException(GetCurrentLocation(), tokenValue);
+		// throw new InvalidIdentifierException(GetCurrentLocation(), tokenValue);
+		var errorToken = FinalizeToken(TokenType.Error);
+
+		diagnostics.AddInvalidIdentifier(errorToken);
+
+		return errorToken;
 	}
 
 	private static bool IsPartOfLiteralNumber(char c)

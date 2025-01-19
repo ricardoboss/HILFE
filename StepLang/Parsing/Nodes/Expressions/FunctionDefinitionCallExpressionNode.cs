@@ -8,7 +8,7 @@ namespace StepLang.Parsing.Nodes.Expressions;
 public record FunctionDefinitionCallExpressionNode(
 	Token OpenParenthesisToken,
 	IReadOnlyList<IVariableDeclarationNode> Parameters,
-	CodeBlockStatementNode Body,
+	StatementNode Body,
 	IReadOnlyList<ExpressionNode> CallArguments) : ExpressionNode
 {
 	public override ExpressionResult EvaluateUsing(IExpressionEvaluator evaluator)

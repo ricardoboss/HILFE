@@ -139,7 +139,7 @@ public partial class Interpreter
 	}
 
 	private void RunForeachLoop(Action<ExpressionResult>? updateKey, Action<ExpressionResult> updateValue,
-		TokenLocation collectionLocation, ExpressionResult collection, CodeBlockStatementNode body)
+		TokenLocation collectionLocation, ExpressionResult collection, StatementNode body)
 	{
 		var pairs = ConvertToForeachEnumerable(collectionLocation, collection);
 

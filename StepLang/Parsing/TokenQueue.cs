@@ -1,4 +1,5 @@
 using StepLang.Tokenizing;
+using StepLang.Utils;
 using System.Diagnostics.CodeAnalysis;
 
 namespace StepLang.Parsing;
@@ -21,6 +22,8 @@ public class TokenQueue
 	public bool IgnoreMeaningless { get; set; }
 
 	public Token? LastToken { get; private set; }
+
+	private static readonly char[] Vowels = ['a', 'e', 'i', 'o', 'u'];
 
 	public bool TryDequeue([NotNullWhen(true)] out Token? token)
 	{
@@ -52,29 +55,33 @@ public class TokenQueue
 		return true;
 	}
 
-	public Token Dequeue()
+	public Result<Token> Dequeue()
 	{
-		if (!TryDequeue(out var token))
-		{
-			throw new UnexpectedEndOfTokensException(LastToken?.Location);
-		}
+		if (TryDequeue(out var token))
+			return token.ToResult();
 
-		return token;
+		var exception = new UnexpectedEndOfTokensException(LastToken);
+
+		return exception.ToErr<Token>();
 	}
 
-	public Token[] Dequeue(int count)
+	public Result<Token[]> Dequeue(int count)
 	{
 		var tokens = new Token[count];
 
 		for (var i = 0; i < count; i++)
 		{
-			tokens[i] = Dequeue();
+			var result = Dequeue();
+			if (result is Ok<Token> { Value: var token })
+				tokens[i] = token;
+			else
+				return result.Map<Token, Token[]>();
 		}
 
-		return tokens;
+		return tokens.ToResult();
 	}
 
-	public Token Dequeue(params TokenType[] allowed)
+	public Result<Token> Dequeue(params TokenType[] allowed)
 	{
 		Token? token;
 		do
@@ -84,22 +91,33 @@ public class TokenQueue
 				continue;
 			}
 
-			var typeInfo = allowed.Length switch
+			string typeInfo;
+			switch (allowed.Length)
 			{
-				0 => "any token",
-				1 => $"a {allowed[0].ToDisplay()}",
-				_ => $"any one of {string.Join(',', allowed.Select(TokenTypes.ToDisplay))}",
-			};
+				case 0:
+					typeInfo = "any token";
+					break;
+				case 1:
+					var display = allowed[0].ToDisplay();
+					var firstChar = display.ToLowerInvariant()[0];
+					var article = Vowels.Any(c => firstChar == c) ? "an" : "a";
 
-			throw new UnexpectedEndOfTokensException(LastToken?.Location, $"Expected {typeInfo}");
+					typeInfo = $"{article} {display}";
+					break;
+				default:
+					typeInfo =
+						$"one of {string.Join(", ", allowed[..^1].Select(TokenTypes.ToDisplay))} or {allowed[^1].ToDisplay()}";
+
+					break;
+			}
+
+			return new UnexpectedEndOfTokensException(LastToken, $"Expected {typeInfo}").ToErr<Token>();
 		} while (!token.Type.HasMeaning() && IgnoreMeaningless);
 
-		if (!allowed.Contains(token.Type))
-		{
-			throw new UnexpectedTokenException(token, allowed);
-		}
+		if (allowed.Contains(token.Type))
+			return token.ToResult();
 
-		return token;
+		return new UnexpectedTokenException(token, allowed).ToErr<Token>();
 	}
 
 	public TokenType? PeekType(int offset = 0)

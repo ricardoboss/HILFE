@@ -1,8 +1,11 @@
-﻿{
-  "ErrorCode": "PAR003",
-  "Message": "A value was expected, but none was found",
-  "HelpText": "Make sure your expression comes directly after the '=' in an assignment or declaration.",
-  "Line": 1,
-  "Column": 10,
-  "Length": 1
-}
+﻿[
+  {
+    "ErrorCode": "PAR003",
+    "Message": "A value was expected, but none was found",
+    "Severity": "Error",
+    "Area": "Parsing",
+    "Line": 1,
+    "Column": 10,
+    "Length": 1
+  }
+]

@@ -9,4 +9,5 @@ public interface IVariableDeclarationEvaluator
 	Variable Evaluate(NullableVariableDeclarationNode variableDeclarationNode);
 	Variable Evaluate(VariableInitializationNode variableDeclarationNode);
 	Variable Evaluate(NullableVariableInitializationNode variableDeclarationNode);
+	Variable Evaluate(ErrorVariableDeclarationNode variableDeclarationNode);
 }

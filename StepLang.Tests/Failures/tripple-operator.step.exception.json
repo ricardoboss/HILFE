@@ -1,8 +1,11 @@
-{
-  "ErrorCode": "PAR001",
-  "Message": "Expected one of type name, identifier, new line or line comment, but got '+' instead",
-  "HelpText": "This error is usually caused by a missing token or a typo. Check the syntax of the statement you are trying to use. Also review your code for syntax errors, such as missing parentheses or other punctuation.",
-  "Line": 3,
-  "Column": 4,
-  "Length": 1
-}
+[
+  {
+    "ErrorCode": "PAR001",
+    "Message": "Unexpected '+', expected any one of type name, identifier, new line, line comment",
+    "Severity": "Error",
+    "Area": "Parsing",
+    "Line": 3,
+    "Column": 4,
+    "Length": 1
+  }
+]

@@ -44,6 +44,11 @@ public partial class Interpreter : IVariableDeclarationEvaluator
 			expressionNode.Expression.EvaluateUsing(this), true);
 	}
 
+	public Variable Evaluate(ErrorVariableDeclarationNode variableDeclarationNode)
+	{
+		throw new NotSupportedException("Cannot evaluate error variable declaration node");
+	}
+
 	public void Visit(VariableAssignmentNode statementNode)
 	{
 		var variable = CurrentScope.GetVariable(statementNode.Identifier);

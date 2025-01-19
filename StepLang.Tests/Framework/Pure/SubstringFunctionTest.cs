@@ -1,3 +1,4 @@
+using StepLang.Diagnostics;
 using StepLang.Interpreting;
 using StepLang.Parsing;
 using StepLang.Tokenizing;
@@ -28,10 +29,12 @@ public class SubstringFunctionTest
 	[InlineData("substring(\"Hello, world!\", -100, 5)", "")]
 	public void TestSubstring(string code, string result)
 	{
-		var tokenizer = new Tokenizer($"print({code})");
+		var diagnostics = new DiagnosticCollection();
+
+		var tokenizer = new Tokenizer($"print({code})", diagnostics);
 		var tokens = tokenizer.Tokenize(TestContext.Current.CancellationToken);
 
-		var parser = new Parser(tokens);
+		var parser = new Parser(tokens, diagnostics);
 		var root = parser.ParseRoot();
 
 		using var output = new StringWriter();
@@ -39,5 +42,6 @@ public class SubstringFunctionTest
 		root.Accept(interpreter);
 
 		Assert.Equal(result, output.ToString());
+		Assert.Empty(diagnostics);
 	}
 }
